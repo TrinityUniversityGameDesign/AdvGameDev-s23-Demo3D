@@ -14,9 +14,16 @@ namespace RaceCloneScripts
         public float length = 1000f;
         
         private GameObject[] obstacles;
+        private Globals global;
         
         // Start is called before the first frame update
         void Start()
+        {
+            global = GameObject.FindObjectOfType<Globals>();
+            global.onStart.AddListener(InitialSpawn);
+        }
+        
+        void InitialSpawn()
         {
             obstacles = new GameObject[numObstacles];
             for (int i = 0; i < numObstacles; i++)
@@ -28,12 +35,7 @@ namespace RaceCloneScripts
                 obstacles[i] = tmp;
             }    
         }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
+        
     }
     
 }

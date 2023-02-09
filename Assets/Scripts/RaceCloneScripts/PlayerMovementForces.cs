@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace RaceCloneScripts
 {
@@ -20,38 +21,64 @@ namespace RaceCloneScripts
         private Vector3 forwardForce;
         private Vector3 turnForce;
         
+        private Globals global;
+
+        private Image speedImage;
+        
         // Start is called before the first frame update
         void Start()
         {
             rb = GetComponent<Rigidbody>();
             forwardForce = transform.forward * forwardPower;
             turnForce = transform.right * turnPower;
+
+            speedImage = GetComponentInChildren<Image>();
+
+            //Register functions with events
+            global = GameObject.Find("GameController").GetComponent<Globals>();
+            global.onStart.AddListener(ResetPlayer);
+            
+        }
+        
+        public void ResetPlayer()
+        {
+            transform.position = Vector3.zero;
+            transform.rotation = Quaternion.identity;
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            speedImage.rectTransform.sizeDelta = new Vector2(0f, 0.25f);
         }
 
         // Update is called once per frame
         void Update()
         {
-            Vector3 sunDir = -sunlight.forward;
-            float horiz = Input.GetAxis("Horizontal");
-            //Debug.Log(horiz);
-            rb.AddForce(horiz * Time.deltaTime * turnForce);
-            if (rb.velocity.z < maxForwardSpeed)
+            if (global.state == GameState.RUNNING)
             {
-                float lightAmt = Vector3.Dot(transform.up, sunDir);
-                Debug.Log(lightAmt);
-                rb.AddForce(forwardForce * lightAmt);
-            }
-            
-            //Check if in shadow
-            
-            RaycastHit[] hits = Physics.RaycastAll(transform.position, sunDir, 100f, hitMask);
-            if (hits.Length > 0)
-            {
-                if (rb.velocity.z > 0)
+                Vector3 sunDir = -sunlight.forward;
+                float horiz = Input.GetAxis("Horizontal");
+                rb.AddForce(horiz * Time.deltaTime * turnForce);
+                if (rb.velocity.z < maxForwardSpeed)
                 {
-                    rb.AddForce(-forwardForce * 10f);
+                    float lightAmt = Vector3.Dot(transform.up, sunDir);
+                    rb.AddForce(forwardForce * lightAmt);
                 }
+
+                //Check if in shadow
+                RaycastHit[] hits = Physics.RaycastAll(transform.position, sunDir, 100f, hitMask);
+                if (hits.Length > 0)
+                {
+                    if (rb.velocity.z > 0)
+                    {
+                        rb.AddForce(-forwardForce * 10f);
+                    }
+                }
+
+                global.score += (int)rb.velocity.z;
             }
+            
+            //Update the speed indicator
+            float speedFrac = rb.velocity.z / maxForwardSpeed;
+            speedImage.rectTransform.sizeDelta = new Vector2(speedFrac * 2f, 0.25f);
 
         }
         
@@ -59,13 +86,7 @@ namespace RaceCloneScripts
         {
             if (collision.gameObject.CompareTag("Obstacle"))
             {
-                Debug.Log("Collision");
-                //Destroy(gameObject);
-                rb.velocity = Vector3.zero;
-                forwardForce = Vector3.zero;
-                forwardPower = 0f;
-                turnForce = Vector3.zero;
-                turnPower = 0f;
+                global.onExplode.Invoke();
             }
         }
         

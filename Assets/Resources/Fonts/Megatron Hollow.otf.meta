@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 1de02da5fbe2c490ea025a896ee96d94
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Megatron Hollow
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 38241465abb8b40a59f4f330644b4ef2, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
