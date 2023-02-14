@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class PlayerControllerThirdPerson : MonoBehaviour
 {
-    public float moveSpeed = 500f;
+    public float forwardSpeed = 5000f;
+    public float strafeSpeed = 2000f;
     public float turnSpeed = 1000f;
     public LayerMask groundMask;
     public float airDamping = 0.1f;
@@ -27,13 +28,14 @@ public class PlayerControllerThirdPerson : MonoBehaviour
         transform.Rotate(transform.up, turnAmount);
         
         bool grounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-        Debug.Log(grounded);
+        //Debug.Log(grounded);
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-        
+        Vector3 moveForce =  forwardSpeed * vertical * Time.deltaTime * transform.forward + 
+                             strafeSpeed * horizontal * Time.deltaTime * transform.right;        
         if (grounded)
         {
-            Vector3 moveForce = moveSpeed * (vertical * Time.deltaTime * transform.forward + horizontal * Time.deltaTime * transform.right);
+
             rb.AddForce(moveForce);
             
             if (Input.GetButtonDown("Jump"))
@@ -43,9 +45,7 @@ public class PlayerControllerThirdPerson : MonoBehaviour
         }
         else // in air
         {
-            Vector3 moveForce = moveSpeed * (vertical * Time.deltaTime * transform.forward + horizontal * Time.deltaTime * transform.right);
             rb.AddForce(moveForce * airDamping);
-
         }
         
     }
