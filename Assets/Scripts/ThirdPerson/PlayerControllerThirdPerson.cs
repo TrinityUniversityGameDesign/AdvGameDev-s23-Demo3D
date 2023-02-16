@@ -5,16 +5,19 @@ using UnityEngine;
 
 public class PlayerControllerThirdPerson : MonoBehaviour
 {
-    public float forwardSpeed = 5000f;
-    public float strafeSpeed = 2000f;
+    public float speed = 5000f;
+    public float jumpPower = 1000f;
     public float turnSpeed = 1000f;
     public LayerMask groundMask;
     public float airDamping = 0.1f;
     
+    public Transform cam = null;
+    
     private Transform groundCheck;
-    public float groundDistance = 0.4f;
+    public float groundDistance = 0.15f;
     private Rigidbody rb;
 
+    private float angleVelocity;
     void Start()
     {
         groundCheck = transform.Find("GroundCheck");
@@ -24,28 +27,45 @@ public class PlayerControllerThirdPerson : MonoBehaviour
 
     private void Update()
     {
-        float turnAmount =  turnSpeed * Time.deltaTime * Input.GetAxis("Mouse X");
-        transform.Rotate(transform.up, turnAmount);
+        float horiz = Input.GetAxisRaw("Horizontal");
+        float vert = Input.GetAxisRaw("Vertical");
         
+        Vector3 moveForce = Vector3.zero;
+
+        if (cam == null)
+        {
+            moveForce = vert * transform.forward + horiz * transform.right;
+            float turnAmount =  turnSpeed * Time.deltaTime * Input.GetAxis("Mouse X");
+            transform.Rotate(transform.up, turnAmount);
+        }
+        else 
+        {
+            Vector3 inputDirection = new Vector3(horiz, 0f, vert);
+            if (inputDirection.magnitude > 0.1f)
+            {
+                float inputAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg;
+                //Update inputAngle to move relative to camera angle
+                inputAngle += cam.eulerAngles.y;
+
+                float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, inputAngle, ref angleVelocity, 0.1f);
+                transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+
+                moveForce = Quaternion.Euler(0f, inputAngle, 0f) * Vector3.forward;
+            }
+        }
+
         bool grounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-        //Debug.Log(grounded);
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 moveForce =  forwardSpeed * vertical * Time.deltaTime * transform.forward + 
-                             strafeSpeed * horizontal * Time.deltaTime * transform.right;        
         if (grounded)
         {
-
-            rb.AddForce(moveForce);
-            
+            rb.AddForce(speed * Time.deltaTime * moveForce);
             if (Input.GetButtonDown("Jump"))
             {
-                rb.AddForce(Vector3.up * 1000f);    
+                rb.AddForce(Vector3.up * jumpPower);    
             }
         }
         else // in air
         {
-            rb.AddForce(moveForce * airDamping);
+            rb.AddForce(airDamping * speed * Time.deltaTime * moveForce);
         }
         
     }
