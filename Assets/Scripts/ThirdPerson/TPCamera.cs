@@ -12,6 +12,13 @@ public class TPCamera : MonoBehaviour
   
   void Start()
   {
+    Vector3 x = new Vector3(1, 0, 0);
+    Quaternion q = Quaternion.Euler(0,90,0);
+    Debug.Log(x);
+    Debug.Log(q);
+    Vector3 xRotQ = q * x;
+    Debug.Log(xRotQ);
+    
     positionOffset = transform.position - target.position;
     angleOffset = transform.eulerAngles - target.eulerAngles;
     Cursor.lockState = CursorLockMode.Locked;
