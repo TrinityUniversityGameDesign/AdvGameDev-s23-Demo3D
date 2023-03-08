@@ -86,7 +86,10 @@ namespace RaceCloneScripts
         {
             if (collision.gameObject.CompareTag("Obstacle"))
             {
-                global.onExplode.Invoke();
+                if (global.state == GameState.RUNNING)
+                {
+                    global.onExplode.Invoke();
+                }
             }
         }
         
